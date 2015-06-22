@@ -611,7 +611,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug goto :end
+    <!-- Mono/Mac OS X Benno Rem 22.06.2015: This works under Windows -->
+    <PostBuildEvent Condition=" '$(OS)' != 'Unix' ">if $(ConfigurationName) == Debug goto :end
 
 echo "Copying files to ReleaseBuilds directory"
 Copy "$(TargetDir)*.*" "$(SolutionDir)ReleaseBuilds\$(ProjectName)\"
@@ -619,6 +620,16 @@ Copy "$(SolutionDir)ReleaseNotes.txt"  "$(SolutionDir)ReleaseBuilds\
 Copy "$(SolutionDir)Cicero Technical and User Manual.doc"  "$(SolutionDir)ReleaseBuilds\
 
 :end
+echo "Ran post-build script for $(ProjectName)"</PostBuildEvent>
+    <!-- Mono/Mac OS X Benno Rem 22.06.2015: This works under Mac OS X -->
+    <PostBuildEvent Condition=" '$(OS)' == 'Unix' ">if [ $(ConfigurationName) != Debug ]; then
+
+echo "Copying files to ReleaseBuilds directory"
+cp "$(TargetDir)*.*" "$(SolutionDir)ReleaseBuilds\$(ProjectName)\"
+cp "$(SolutionDir)ReleaseNotes.txt"  "$(SolutionDir)ReleaseBuilds\
+cp "$(SolutionDir)Cicero Technical and User Manual.doc"  "$(SolutionDir)ReleaseBuilds\
+
+fi
 echo "Ran post-build script for $(ProjectName)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

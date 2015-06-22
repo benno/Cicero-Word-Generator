@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="WordGenerator/Cicero.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Atticus-Release-x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="WordGenerator/Storage.cs">
+    <Files>
+      <File FileName="AtticusServer/ServerRuntime/AtticusServerCommunicator.cs" Line="31" Column="14" />
+      <File FileName="WordGenerator/ClientRunner.cs" Line="1" Column="1" />
+      <File FileName="WordGenerator/Program.cs" Line="1" Column="1" />
+      <File FileName="WordGenerator/Storage.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
