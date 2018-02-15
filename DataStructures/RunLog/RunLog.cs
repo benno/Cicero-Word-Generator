@@ -8,6 +8,7 @@ using System.IO;
 using System.Globalization;
 using System.Threading;
 using DataStructures.UtilityClasses;
+using System.Xml.Serialization;
 
 namespace DataStructures
 {
@@ -106,7 +107,14 @@ namespace DataStructures
             
             string fileStamp=NamingFunctions.get_fileStamp(runSequence,runSettings,runTime);
             string fileExt = ".clg";
-            string fileDirectory = NamingFunctions.get_fileDirectory(runSettings) + @"\RunLogs\";
+			string fileDirectory;
+			switch (runSettings.StyleFileTimestamps)
+			{
+				case DataStructures.SettingsData.StyleTypes.Hamburg: fileDirectory = NamingFunctions.get_fileDirectory(runSettings) + @"\";
+					break;
+				default: fileDirectory = NamingFunctions.get_fileDirectory(runSettings) + @"\RunLogs\";
+					break;
+			}
 
             try
             {
@@ -127,6 +135,54 @@ namespace DataStructures
             using (FileStream fs = new FileStream(fullFileName, FileMode.Create))
             {
                 b.Serialize(fs, this);
+			}
+
+			this.WriteXMLLogFile(fileDirectory, fileStamp);
+
+			return fullFileName;
+		}
+
+		/// <summary>
+		/// Writes the runlog to a timestamped file in the RunLogs directory. Returns the filename that the log was written to. Returns null if
+		/// no log was written (for instance, if one already exists with the same stamp).
+		/// <author>Mika Jacobsen</author> this is a modified version of the previous code that will give out an extra XML file with only sequence variables and values
+		/// </summary>
+		/// <returns></returns>
+		public string WriteXMLLogFile(string fileDirectory, string fileStamp)
+		{
+			XmlSerializer c = new XmlSerializer(typeof(List<DataStructures.Variable>));
+
+			//string fileStamp = NamingFunctions.get_fileStamp(runSequence, runSettings, runTime);
+			string fileExt = ".xml";
+			//string fileDirectory;
+			//switch (runSettings.StyleFileTimestamps)
+			//{
+			//	case DataStructures.SettingsData.StyleTypes.Hamburg: fileDirectory = NamingFunctions.get_fileDirectory(runSettings) + @"\";
+			//		break;
+			//	default: fileDirectory = NamingFunctions.get_fileDirectory(runSettings) + @"\RunLogs\";
+			//		break;
+			//}
+
+
+			//try
+			//{
+			//	if (!Directory.Exists(fileDirectory))
+			//	{
+			//		Directory.CreateDirectory(fileDirectory);
+			//	}
+			//}
+			//catch { }
+
+			string fullFileName = fileDirectory + fileStamp + fileExt;
+
+			if (File.Exists(fullFileName))
+			{
+				return null;
+			}
+
+			using (FileStream fs = new FileStream(fullFileName, FileMode.Create))
+			{
+				c.Serialize(fs, this.runSequence.Variables);
             }
 
             return fullFileName;
