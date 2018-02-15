@@ -132,16 +132,34 @@ namespace DataStructures
         public HardwareChannel.HardwareConstants.ChannelTypes ChannelType
         {
             get { return channelType; }
-        }
+		}
 
-        private HardwareChannel.HardwareConstants.GPIBDeviceType gpibDeviceType;
+		private HardwareChannel.HardwareConstants.GPIBDeviceType gpibDeviceType;
 
-        [Description("Applies only for GPIB channels. Specifies the type of device that this gpib channel is connected to."),
-        Category("GPIB")]
-        public HardwareChannel.HardwareConstants.GPIBDeviceType GpibDeviceType
-        {
-            get { return gpibDeviceType; }
-        }
+		[Description("Applies only for GPIB channels. Specifies the type of device that this gpib channel is connected to."),
+		Category("GPIB")]
+		public HardwareChannel.HardwareConstants.GPIBDeviceType GpibDeviceType
+		{
+			get { return gpibDeviceType; }
+		}
+
+		private HardwareChannel.HardwareConstants.VISADeviceType visaDeviceType;
+
+		[Description("Applies only for TCPIP channels. Specifies the type of device that this tcpip channel is connected to."),
+		Category("TCPIP")]
+		public HardwareChannel.HardwareConstants.VISADeviceType VisaDeviceType
+		{
+			get { return visaDeviceType; }
+		}
+
+		private bool visaSizeHeader;
+
+		[Description("Applies only for TCPIP channels. Specifies if the device requires a 4 BYTE size header before the actual message."),
+		Category("TCPIP")]
+		public bool VisaSizeHeader
+		{
+			get { return visaSizeHeader; }
+		}
 
         private string channelDescription;
 
@@ -190,18 +208,31 @@ namespace DataStructures
             this.isUnAssigned = false;
             this.gpibAddress = new DataStructures.Gpib.Address();
             this.gpibDeviceType = HardwareConstants.GPIBDeviceType.Unknown;
+			this.visaDeviceType = HardwareConstants.VISADeviceType.Unknown;
+			this.visaSizeHeader = false;
         }
 
-        public HardwareChannel(string serverName, string deviceName, string channelName, string channelDescription, HardwareChannel.HardwareConstants.ChannelTypes ct, DataStructures.Gpib.Address gpibAddress, HardwareChannel.HardwareConstants.GPIBDeviceType gpibDeviceType)
-            : this(serverName, deviceName, channelName,channelDescription, ct)
-        {
-            if (this.ChannelType != HardwareConstants.ChannelTypes.gpib)
-            {
-                throw new Exception("Do not call gpib channel constructor for a non gpib device.");
-            }
-            this.gpibAddress = gpibAddress;
-            this.gpibDeviceType = gpibDeviceType;
-        }
+		public HardwareChannel(string serverName, string deviceName, string channelName, string channelDescription, HardwareChannel.HardwareConstants.ChannelTypes ct, DataStructures.Gpib.Address gpibAddress, HardwareChannel.HardwareConstants.GPIBDeviceType gpibDeviceType)
+			: this(serverName, deviceName, channelName, channelDescription, ct)
+		{
+			if (this.ChannelType != HardwareConstants.ChannelTypes.gpib)
+			{
+				throw new Exception("Do not call gpib channel constructor for a non gpib device.");
+			}
+			this.gpibAddress = gpibAddress;
+			this.gpibDeviceType = gpibDeviceType;
+		}
+
+		public HardwareChannel(string serverName, string deviceName, string channelName, string channelDescription, HardwareChannel.HardwareConstants.ChannelTypes ct, HardwareChannel.HardwareConstants.VISADeviceType visaDeviceType, bool visaSizeHeader)
+			: this(serverName, deviceName, channelName, channelDescription, ct)
+		{
+			if (this.ChannelType != HardwareConstants.ChannelTypes.rs232)
+			{
+				throw new Exception("Do not call tcpip channel constructor for a non tcpip device.");
+			}
+			this.visaDeviceType = visaDeviceType;
+			this.visaSizeHeader = visaSizeHeader;
+		}
 
  
 
@@ -311,9 +342,6 @@ namespace DataStructures
             return "port" + portnum;
         }
 
-        
-
-
         #region HardwareConstants
 
         public class HardwareConstants
@@ -336,6 +364,22 @@ namespace DataStructures
             ":OUTP:MOD OFF\n" +
             ":OUTP ON\n" + 
             ":DISP:ANN:AMPL:UNIT V\n"// for esg devices
+        };
+
+			/// <summary>
+			/// Enumerates the various VISA devices which the software knows how to drive. Unknown devices can only be driven
+			/// by user specification of the output string.
+			/// </summary>
+			public enum VISADeviceType { Unknown, BBBEasyMotionVisaServer };
+
+			/// <summary>
+			/// This array of string holds the initialization commands which are to be sent at the beginning of a run
+			/// to a gpib device, depending on the gpibDeviceType.
+			/// When adding new gpib device types, add their initialization commands here.
+			/// </summary>
+			public static readonly string[] visaInitializationCommands = new string[] 
+        { "",   // for unknown devices
+            "BOOT-SOMETHING" //BBBVisaServer
         };
 
             public static Array allChannelTypes = Enum.GetValues(typeof(ChannelTypes));

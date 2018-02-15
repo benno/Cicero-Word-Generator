@@ -1293,10 +1293,12 @@ namespace WordGenerator
 
 
             TimeStep step;
+			// TODO maybe implement a dwell word settings such that any time step can become the dwell word...
             if (isBackgroundRunform)
                 step = Storage.sequenceData.dwellWord();
             else
                 step = runningSequence.dwellWord();
+			// Here the dwell word is outputted
             if (step != null)
             {
                 addMessageLogText(this, new MessageEvent("Attempting to output the dwell timestep."));

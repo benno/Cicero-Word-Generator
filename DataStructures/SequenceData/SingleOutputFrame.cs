@@ -22,10 +22,21 @@ namespace DataStructures
         /// </summary>
         public Dictionary<int, bool> digitalValues;
 
+		// DONE 2017.09.19 BR: added RS23, GPIB channels here
+		/// <summary>
+		/// RS232Group belonging to the timestep
+		/// </summary>
+		public RS232Group rs232Group;
+
+		/// <summary>
+		/// GPIBGroup belonging to the timestep
+		/// </summary>
+		public GPIBGroup gpibGroup;
+
         public SingleOutputFrame()
         {
-            analogValues = new Dictionary<int, double>();
-            digitalValues = new Dictionary<int, bool>();
+			analogValues = new Dictionary<int, double>();
+			digitalValues = new Dictionary<int, bool>();
         }
     }
 }
