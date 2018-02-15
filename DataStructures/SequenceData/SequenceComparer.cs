@@ -204,7 +204,7 @@ namespace DataStructures
         private static bool CompareRs232ChannelData(string preString, RS232GroupChannelData a, RS232GroupChannelData b, List<SequenceDifference> ans)
         {
             bool diffs = false;
-            diffs |= CompareGenericStructsAsStrings<RS232GroupChannelData.RS232DataType>(preString + "data type ", a.DataType, b.DataType, ans);
+            diffs |= CompareGenericStructsAsStrings<RS232GroupChannelData.RS232ChannelDataType>(preString + "data type ", a.DataType, b.DataType, ans);
             diffs |= CompareBools(preString + "enabled/disabled ", a.Enabled, b.Enabled, ans);
             diffs |= CompareStrings(preString + "raw string ", a.RawString, b.RawString, ans);
             diffs |= CompareLists<StringParameterString>(preString + "string-parameter-strings ", a.StringParameterStrings, b.StringParameterStrings, ans, CompareStringParameterStrings);

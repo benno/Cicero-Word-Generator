@@ -189,6 +189,7 @@ namespace DataStructures
         /// Returns the first enabled timestep, which is going to act as the dwell word for our purposes.
         /// </summary>
         /// <returns></returns>
+		// TODO add the support for a user selected dwell word other then the first enabled timestep.
         public TimeStep dwellWord()
         {
             if (TimeSteps != null)
@@ -1361,6 +1362,7 @@ namespace DataStructures
             return null;
         }
 
+		// This function is called for the dwell word through outputTimestepNow() in ClientRunner
         public SingleOutputFrame getSingleOutputFrameAtEndOfTimestep(TimeStep step, SettingsData settings, bool outputAnalogDwellValues)
         {
          
@@ -1380,6 +1382,7 @@ namespace DataStructures
 
             SingleOutputFrame ans = new SingleOutputFrame();
 
+			// Output the analog values
             foreach (int analogID in settings.logicalChannelManager.Analogs.Keys)
             {
                 if (settings.logicalChannelManager.Analogs[analogID].TogglingChannel)
@@ -1403,6 +1406,7 @@ namespace DataStructures
                 }
             }
 
+			// Output the digital values
             foreach (int digitalID in settings.logicalChannelManager.Digitals.Keys)
             {
                 bool val = false;
@@ -1459,6 +1463,12 @@ namespace DataStructures
                 }
                 ans.digitalValues.Add(digitalID, val);
             }
+
+			// DONE 2017.09.14 BR: it would be great to have the output of RS232, TCPIP and GPIB channels as well.
+			// Output the RS232 commands
+			ans.rs232Group = step.rs232Group;
+			// Output the GPIB commands
+			ans.gpibGroup = step.GpibGroup;
 
             return ans;
 
@@ -2126,6 +2136,77 @@ namespace DataStructures
 
             ans[currentSample] = dwellWord().getEndAnalogValue(analogChannelID, Variables, CommonWaveforms);
         }
+
+		/// <summary>
+		/// Computes a certain range of steps into an analog buffer, as specified by the timeSteps array argument.
+		/// </summary>
+		/// <param name="?"></param>
+		/// <returns></returns>
+
+		public void computeAnalogBufferRange(List<TimeStep> timeSteps, int analogChannelID, double masterTimebaseSampleDuration, double[] ans, TimestepTimebaseSegmentCollection timebaseSegments)
+		{
+			int currentSample = 0;
+			double dwellingValue = dwellWord().getEndAnalogValue(analogChannelID, Variables, CommonWaveforms);
+			AnalogGroup currentlyRunningGroup = null;
+			double groupRunningTime = 0;
+
+
+			for (int stepID = 0; stepID < timeSteps.Count; stepID++)
+			{
+				TimeStep currentStep = timeSteps[stepID];
+				if (currentStep.StepEnabled)
+				{
+					if (currentStep.AnalogGroup != null)
+					{
+						if (currentStep.AnalogGroup.channelEnabled(analogChannelID))
+						{
+							currentlyRunningGroup = currentStep.AnalogGroup;
+							groupRunningTime = 0;
+						}
+					}
+
+
+					if (currentlyRunningGroup == null)
+					{
+						int nSegmentSamples = timebaseSegments.nSegmentSamples(currentStep);
+
+
+
+						for (int j = 0; j < nSegmentSamples; j++)
+						{
+							ans[j + currentSample] = dwellingValue;
+						}
+						currentSample += nSegmentSamples;
+					}
+					else
+					{
+						Waveform runningWaveform = currentlyRunningGroup.ChannelDatas[analogChannelID].waveform;
+						double waveformRunningTime = groupRunningTime;
+						foreach (VariableTimebaseSegment segment in timebaseSegments[currentStep])
+						{
+
+							runningWaveform.getInterpolation(segment.NSegmentSamples, waveformRunningTime,
+								waveformRunningTime + segment.NSegmentSamples * segment.MasterSamplesPerSegmentSample * masterTimebaseSampleDuration,
+								ans,
+								currentSample, Variables, CommonWaveforms);
+							currentSample += segment.NSegmentSamples;
+							waveformRunningTime += segment.NSegmentSamples * segment.MasterSamplesPerSegmentSample * masterTimebaseSampleDuration;
+						}
+
+						groupRunningTime += currentStep.StepDuration.getBaseValue();
+						if (runningWaveform.getEffectiveWaveformDuration() <= groupRunningTime)
+						{
+							currentlyRunningGroup = null;
+						}
+
+						dwellingValue = runningWaveform.getValueAtTime(runningWaveform.WaveformDuration.getBaseValue(),
+							Variables, CommonWaveforms);
+					}
+				}
+			}
+
+			ans[currentSample] = dwellWord().getEndAnalogValue(analogChannelID, Variables, CommonWaveforms);
+		}
 
         /// <summary>
         /// Generates the digital buffer for a digital output that will be clocked with the same clock

@@ -23,6 +23,7 @@ namespace WordGenerator
 
         /// <summary>
         /// outputs the editor's timestep. set silent to true if no message logs should be generated.
+		/// This function is also used for the dwellword
         /// </summary>
         /// <param name="silent"></param>
         /// <returns></returns>
@@ -53,7 +54,7 @@ namespace WordGenerator
                 try
                 {
 
-
+					// DONE need to get this to work for RS232 and GPIB
                     actionStatus = Storage.settingsData.serverManager.outputSingleTimestepOnConnectedServers(
                         Storage.settingsData,
                         Storage.sequenceData.getSingleOutputFrameAtEndOfTimestep(timeStep, Storage.settingsData, Storage.settingsData.OutputAnalogDwellValuesOnOutputNow),

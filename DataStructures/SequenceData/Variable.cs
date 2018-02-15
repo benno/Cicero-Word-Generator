@@ -191,6 +191,30 @@ namespace DataStructures
 
         }
 
+
+		/// <summary>
+		/// The functon takes a string input and uses the VariableList to parse variables starting with a $ in the string
+		/// </summary>
+		/// <param name="input">The string to be parsed</param>
+		/// <param name="allVariables">List of all variable objects, in order to track down 
+		/// values of other referenced variables.</param>
+		/// <returns>string</returns>
+		public static string parseVariableString(string input, List<Variable> allVariables, ref string debug)
+		{
+			string variableToken = "$";
+			string varName = "";
+			string varValue = "";
+			foreach (Variable var in allVariables)
+			{
+				varName = variableToken + var.variableName;
+				varValue = var.variableValue.ToString();
+				debug = varName + " => " + varValue;
+				input = input.Replace(varName, varValue);
+			}
+			return input;
+		}
+
+
         private double variableValue;
 
         private bool listDriven;

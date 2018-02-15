@@ -26,8 +26,8 @@ namespace wgControlLibrary
             groupChannelData = new RS232GroupChannelData();
             logicalChannel = new LogicalChannel();
             this.layout();
-        
-            foreach (RS232GroupChannelData.RS232DataType type in RS232GroupChannelData.allDataTypes)
+
+			foreach (RS232GroupChannelData.RS232ChannelDataType type in RS232GroupChannelData.RS232ChannelDataType.allTypes)
             {
                 this.dataTypeSelector.Items.Add(type);
             }
@@ -46,12 +46,12 @@ namespace wgControlLibrary
             this.layout();
 
             this.dataTypeSelector.Items.Clear();
-            foreach (RS232GroupChannelData.RS232DataType type in RS232GroupChannelData.allDataTypes) {
+            foreach (RS232GroupChannelData.RS232ChannelDataType type in RS232GroupChannelData.RS232ChannelDataType.allTypes) {
                 this.dataTypeSelector.Items.Add(type);
             }
             //this.dataTypeSelector.Items.AddRange(GPIBGroupChannelData.GpibChannelDataType.allTypes);
-            this.dataTypeSelector.SelectedItem = groupChannelData.DataType;
-            this.rawStringTextBox.Text = groupChannelData.RawString;
+			this.dataTypeSelector.SelectedItem = groupChannelData.DataType;
+			this.rawStringTextBox.Text = groupChannelData.RawString;
         }
         
 
@@ -70,39 +70,47 @@ namespace wgControlLibrary
 			    enabledButton.BackColor = Color.Green;
 			    enabledButton.Text = "Enabled";
                 dataTypeSelector.Enabled = true;
-                if (groupChannelData.DataType == RS232GroupChannelData.RS232DataType.Raw)
+                if (groupChannelData.DataType == RS232GroupChannelData.RS232ChannelDataType.Raw)
                 {
                     rawStringTextBox.Enabled = true;
                     rawStringTextBox.Visible = true;
-                    spsFlowPanel.Visible = false;
-                }
-                else if (groupChannelData.DataType == RS232GroupChannelData.RS232DataType.Parameter)
-                {
-                    rawStringTextBox.Enabled = false;
-                    rawStringTextBox.Visible = false;
-                    spsFlowPanel.Visible = true;
-                    if (groupChannelData.StringParameterStrings == null)
-                    {
-                        groupChannelData.StringParameterStrings = new List<StringParameterString>();
-                    }
-                    if (groupChannelData.StringParameterStrings.Count == 0)
-                    {
-                        groupChannelData.StringParameterStrings.Add(new StringParameterString());
-                    }
+					spsFlowPanel.Visible = false;
+					spsFlowPanel.Controls.Clear();
+				}
+				else if (groupChannelData.DataType == RS232GroupChannelData.RS232ChannelDataType.Parameter)
+				{
+					rawStringTextBox.Enabled = false;
+					rawStringTextBox.Visible = false;
+					spsFlowPanel.Visible = true;
+					if (groupChannelData.StringParameterStrings == null)
+					{
+						groupChannelData.StringParameterStrings = new List<StringParameterString>();
+					}
+					if (groupChannelData.StringParameterStrings.Count == 0)
+					{
+						groupChannelData.StringParameterStrings.Add(new StringParameterString());
+					}
 
-                    spsFlowPanel.Controls.Clear();
+					spsFlowPanel.Controls.Clear();
 
-                    foreach (StringParameterString sps in groupChannelData.StringParameterStrings)
-                    {
-                        StringParameterStringEditor spse = new StringParameterStringEditor(sps);
-                        spsFlowPanel.Controls.Add(spse);
+					foreach (StringParameterString sps in groupChannelData.StringParameterStrings)
+					{
+						StringParameterStringEditor spse = new StringParameterStringEditor(sps);
+						spsFlowPanel.Controls.Add(spse);
 
-                        spse.delete += new Action<StringParameterString>(spse_delete);
-                        spse.insertAbove += new Action<StringParameterString>(spse_insertAbove);
-                        spse.insertBelow += new Action<StringParameterString>(spse_insertBelow);
-                    }
-                     
-                }
+						spse.delete += new Action<StringParameterString>(spse_delete);
+						spse.insertAbove += new Action<StringParameterString>(spse_insertAbove);
+						spse.insertBelow += new Action<StringParameterString>(spse_insertBelow);
+					}
+
+				}
+				else if (groupChannelData.DataType == RS232GroupChannelData.RS232ChannelDataType.Field)
+				{
+					rawStringTextBox.Enabled = false;
+					rawStringTextBox.Visible = false;
+					spsFlowPanel.Visible = false;
+					spsFlowPanel.Controls.Clear();
+				}
                 
 		    }
 		    else
@@ -165,10 +173,9 @@ namespace wgControlLibrary
 
         private void dataTypeSelector_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (dataTypeSelector.SelectedItem is RS232GroupChannelData.RS232DataType)
+            if (dataTypeSelector.SelectedItem is RS232GroupChannelData.RS232ChannelDataType)
             {
-
-                    groupChannelData.DataType = (RS232GroupChannelData.RS232DataType)dataTypeSelector.SelectedItem;
+				groupChannelData.DataType = (RS232GroupChannelData.RS232ChannelDataType)dataTypeSelector.SelectedItem;
             }
             layout();
             if (updateGUI != null)
@@ -177,10 +184,10 @@ namespace wgControlLibrary
             backupSelectedType = dataTypeSelector.SelectedItem;
         }
 
-        private void rawStringTextBox_TextChanged(object sender, EventArgs e)
-        {
-            groupChannelData.RawString = rawStringTextBox.Text;
-        }
+		private void rawStringTextBox_TextChanged(object sender, EventArgs e)
+		{
+			groupChannelData.RawString = rawStringTextBox.Text;
+		}
 
         private void dataTypeSelector_DropDownClosed(object sender, EventArgs e)
         {

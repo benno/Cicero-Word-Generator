@@ -173,7 +173,7 @@ namespace WordGenerator.Controls
 
         #endregion
 
-        private System.Windows.Forms.TextBox textBox1;
+        public System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.NumericUpDown valueSelector;
         private System.Windows.Forms.ComboBox listSelector;
         private System.Windows.Forms.Button deleteButton;

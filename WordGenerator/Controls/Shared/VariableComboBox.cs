@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 using DataStructures;
 
@@ -24,7 +25,8 @@ namespace WordGenerator.Controls
             this.comboBox1.Items.Add("Manual");
             if (WordGenerator.Storage.sequenceData != null)
             {
-                foreach (Variable var in WordGenerator.Storage.sequenceData.Variables)
+				List<Variable> SortedList = Storage.sequenceData.Variables.OrderBy(o => o.VariableName).ToList();
+                foreach (Variable var in SortedList)
                 {
                     comboBox1.Items.Add(var);
                 }
@@ -100,8 +102,9 @@ namespace WordGenerator.Controls
             comboBox1.Items.Clear();
             comboBox1.Items.Add("Manual");
             if (Storage.sequenceData != null)
-            {
-                foreach (Variable var in WordGenerator.Storage.sequenceData.Variables)
+			{
+				List<Variable> SortedList = Storage.sequenceData.Variables.OrderBy(o => o.VariableName).ToList();
+				foreach (Variable var in SortedList)
                 {
                     comboBox1.Items.Add(var);
                 }

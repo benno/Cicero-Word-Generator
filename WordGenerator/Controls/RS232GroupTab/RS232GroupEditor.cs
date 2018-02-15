@@ -82,7 +82,7 @@ namespace WordGenerator.Controls.Temporary
             rs232GroupBeingChanged = false;
             layoutGroupChannelSelectors();
             layoutGraphCollection();
-            waveformEditor1.setWaveform(null);
+            Editor1.setRawText(null);
             descBox.Text = rs232Group.GroupDescription;
             replacementGroupSelector.SelectedItem = null;
 
@@ -90,11 +90,13 @@ namespace WordGenerator.Controls.Temporary
 
         private void layoutGraphCollection()
         {
+			Editor1.setRawText(null);
+
             if (WordGenerator.MainClientForm.instance != null)
                 WordGenerator.MainClientForm.instance.cursorWait();
             try
             {
-                List<Waveform> waveformsToDisplay = new List<Waveform>();
+                List<RawText> rawTextsToDisplay = new List<RawText>();
                 List<string> channelNamesToDisplay = new List<string>();
 
 
@@ -103,21 +105,31 @@ namespace WordGenerator.Controls.Temporary
                 {
                     List<int> usedChannelIDs = rs232Group.getChannelIDs();
                     for (int id = 0; id < usedChannelIDs.Count; id++)
-                    {
-                        RS232GroupChannelData channelData = rs232Group.ChannelDatas[id];
-                        if (channelData.Enabled)
-                        {
-                            // if there are graph-based rs232 data types in future, add their waveform display handlers here
-                        }
+					{
+						int rs232ID = usedChannelIDs[id];
+
+						if (Storage.settingsData.logicalChannelManager.ChannelCollections[HardwareChannel.HardwareConstants.ChannelTypes.rs232].Channels.ContainsKey(rs232ID))
+						{
+
+							RS232GroupChannelData channelData = rs232Group.ChannelDatas[rs232ID];
+							if (channelData.Enabled)
+							{
+								if (channelData.DataType == RS232GroupChannelData.RS232ChannelDataType.Field)
+								{
+									rawTextsToDisplay.Add(channelData.RawText);
+									channelNamesToDisplay.Add(rs232ChannelCollection.Channels[rs232ID].Name);
+								}
+							}
+						}
                     }
                 }
 
 
-                waveformGraphCollection1.deactivateAllGraphs();
+                Collection1.deactivateAllFields();
 
-                waveformGraphCollection1.setWaveforms(waveformsToDisplay);
-                waveformGraphCollection1.setChannelNames(channelNamesToDisplay);
-                waveformGraphCollection1.setWaveformEditor(waveformEditor1);
+				Collection1.setRawTexts(rawTextsToDisplay);
+                Collection1.setChannelNames(channelNamesToDisplay);
+                Collection1.setRawTextEditor(Editor1);
             }
             finally
             {

@@ -180,18 +180,32 @@ namespace DataStructures
 
         private string savePath;
 
-        [Description("Sets the path in which any file produced should be saved"),
+        [Description("Sets the base folder for any file produced. Templates: YYYY = year, MM = month, DD = day. Note: Hamburg/Paris styles attach their own sub-folders."),
         Category("Paris-fork options")]
         public string SavePath
         {
             get {
                 if (savePath == null)
                     savePath = "";
-                return savePath; 
+				return DataStructures.UtilityClasses.NamingFunctions.getfrom_template(DateTime.Today, savePath, 0); 
             }
             set { savePath = value; }
-
         }
+
+		private string fileName;
+
+		[Description("(Hamburg style) Sets the filename of the protocol, using templates: YYYY = year, MM = month, DD = day, I...I: ID. Default (blank): YYYY_MM_DD_IIII"),
+		Category("Paris-fork options")]
+		public string FileName
+		{
+			get
+			{
+				if (fileName == null)
+					fileName = "Protocol-YYYY_MM_DD_IIII";
+				return fileName;
+			}
+			set { fileName = value; }
+		}
 
         bool useParisStyleFileTimestamps;
 
@@ -201,6 +215,19 @@ namespace DataStructures
         {
             get { return useParisStyleFileTimestamps; }
             set { useParisStyleFileTimestamps = value; }
+
+        }
+
+        // 2016-12-19 Benno Rem: Added this to support the Hamburg saving format
+        public enum StyleTypes { MIT = 0, Paris, Hamburg };
+        StyleTypes styleFileTimestamps;
+
+        [Description("Choose which style filetimestamps needs to be used (MIT, Paris, Hamburg)."),
+        Category("Paris-fork options"), DefaultValue(StyleTypes.MIT)]
+        public StyleTypes StyleFileTimestamps
+        {
+            get { return styleFileTimestamps; }
+            set { styleFileTimestamps = value; }
 
         }
 

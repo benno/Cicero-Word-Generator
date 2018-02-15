@@ -33,24 +33,24 @@ namespace WordGenerator.Controls
                 this.nextValue.Visible = false;
             }
 
-            this.nextValue.ValueChanged += new EventHandler(nextValue_ValueChanged);
+			this.nextValue.ValueChanged += new EventHandler(nextValue_ValueChanged);
 
             this.clickToChangeButton.Visible = false;
         }
 
-        void nextValue_ValueChanged(object sender, EventArgs e)
-        {
-            if (((double)nextValue.Value) != variable.VariableValue)
-            {
-                this.clickToChangeButton.Visible = true;
-                this.changeValueOnNextRefresh = false;
-                updateButtonColor();
-            }
-            else
-            {
-                clickToChangeButton.Visible = false;
-            }
-        }
+		void nextValue_ValueChanged(object sender, EventArgs e)
+		{
+			if (((double)nextValue.Value) != variable.VariableValue)
+			{
+				this.clickToChangeButton.Visible = true;
+				this.changeValueOnNextRefresh = true; // 2017.10.12 BR: Changed to have the change happing right away, when the value is changed
+				updateButtonColor();
+			}
+			else
+			{
+				clickToChangeButton.Visible = false;
+			}
+		}
 
         private void updateButtonColor()
         {

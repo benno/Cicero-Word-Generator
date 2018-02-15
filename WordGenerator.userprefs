@@ -1,0 +1,20 @@
+﻿<Properties StartupConfiguration="{AA55BBAF-9C99-4CC8-9FE3-D8F6A8B7EBA8}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="WordGenerator/Storage.cs">
+    <Files>
+      <File FileName="AtticusServer/ServerRuntime/AtticusServerCommunicator.cs" Line="31" Column="14" />
+      <File FileName="WordGenerator/ClientRunner.cs" Line="1" Column="1" />
+      <File FileName="WordGenerator/Program.cs" Line="1" Column="1" />
+      <File FileName="WordGenerator/Storage.cs" Line="304" Column="1" />
+      <File FileName="WordGenerator/Controls/RS232GroupTab/RS232GroupEditor.designer.cs" Line="285" Column="34" />
+      <File FileName="WordGenerator/Cicero.csproj" Line="354" Column="51" />
+      <File FileName="WordGenerator/Controls/MainClientForm.cs" Line="970" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.Cicero PreferredExecutionTarget="MonoDevelop.Default" />
+</Properties>
