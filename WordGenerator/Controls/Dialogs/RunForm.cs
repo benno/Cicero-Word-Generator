@@ -178,26 +178,33 @@ namespace WordGenerator
             if (WordGenerator.MainClientForm.instance.studentEdition)
             {
                 MessageBox.Show("Your Cicero Professional Edition (C) License expired on March 31. You are now running a temporary 24 hour STUDENT EDITION license. Please see http://web.mit.edu/~akeshet/www/Cicero/apr1.html for license renewal information.", "License expired -- temporary STUDENT EDITION license.");
-            }
+			}
+
+			// Supress hotkeys in main form when this form is runnings. This will be cleared when the run form closes.
+			WordGenerator.MainClientForm.instance.suppressHotkeys = true;
+
+			InitializeComponent();
 
             IPAddress lclhst = null;
             IPEndPoint ipe = null;
             CameraPCsSocketList = new List<Socket>();
             connectedPCs = new List<SettingsData.IPAdresses>();
             bool errorOccured = false;
+			addMessageLogText(this, new MessageEvent("Connecting to camera..."));
             foreach (SettingsData.IPAdresses ipAdress in Storage.settingsData.CameraPCs)
             {
                 errorOccured = false;
                 if (ipAdress.inUse)
-                {
+				{
+					addMessageLogText(this, new MessageEvent("Connecting to: " + ipAdress.pcAddress.ToString()));
                     try
                     {
 
                         lclhst = Dns.GetHostEntry(ipAdress.pcAddress).AddressList[0];
-                        ipe = new IPEndPoint(lclhst, ipAdress.Port);
-                        CameraPCsSocketList.Add(new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp));
+						ipe = new IPEndPoint(IPAddress.Parse(ipAdress.pcAddress), ipAdress.Port); // new IPEndPoint(lclhst, ipAdress.Port); NR: Obviously, resolving it via the DNS *should* work as well,
+                        CameraPCsSocketList.Add(new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp));				//but if you don't need it (always numerical IP), this works also
 
-                        CameraPCsSocketList[CameraPCsSocketList.Count - 1].Blocking = false;
+                        //CameraPCsSocketList[CameraPCsSocketList.Count - 1].Blocking = false; // 2018.01.30 Benno Rem: Remove the non-blocking camera socket (ask Niels if this is important)
                         CameraPCsSocketList[CameraPCsSocketList.Count - 1].SendTimeout = 100;
                         CameraPCsSocketList[CameraPCsSocketList.Count - 1].ReceiveTimeout = 100;
 
@@ -213,9 +220,12 @@ namespace WordGenerator
                         connectedPCs.Add(ipAdress);
                         try
                         {
-                            CameraPCsSocketList[CameraPCsSocketList.Count - 1].Connect(ipe);
+							CameraPCsSocketList[CameraPCsSocketList.Count - 1].Connect(ipe);
                         }
-                        catch { }
+						catch(Exception e) {
+							addMessageLogText(this, new MessageEvent("Error connecting to socket: " + e.Message));
+						}
+						addMessageLogText(this, new MessageEvent("Camera connected"));
                     }
                 }
             }
@@ -225,10 +235,7 @@ namespace WordGenerator
                 getConfirmationThread = new Thread(new ThreadStart(getConfirmationEntryPoint));
                 getConfirmationThread.Start();
             }
-            // Supress hotkeys in main form when this form is runnings. This will be cleared when the run form closes.
-            WordGenerator.MainClientForm.instance.suppressHotkeys = true;
 
-            InitializeComponent();
             runFormStatus = RunFormStatus.Inactive;
             formCreationTime = DateTime.Now;
 
@@ -883,23 +890,39 @@ namespace WordGenerator
                 {
 
                     byte[] msg;// = Encoding.ASCII.GetBytes(get_fileStamp(sequence));
-                    string shot_name = NamingFunctions.get_fileStamp(sequence, Storage.settingsData, runStartTime);
+					string shot_name = null;
                     string sequenceTime = sequence.SequenceDuration.ToString();
                     string FCamera;
                     string UCamera;
 
+					try
+					{
+						shot_name = "_" + runStartTime.Year.ToString() + "_" + runStartTime.Month.ToString("00") + "_" + runStartTime.Day.ToString("00") + "_" + NamingFunctions.get_fileID(Storage.settingsData).ToString("0000");
+					}
+					catch (Exception e)
+					{
+						addMessageLogText(this, new MessageEvent("Error while creating shot name: " + e.Message));
+					}
+
+					addMessageLogText(this, new MessageEvent("Sending data to camera..."));
                     foreach (Socket theSocket in CameraPCsSocketList)
                     {
                         try
-                        {
+						{
+							//addMessageLogText(this, new MessageEvent("Socket: " + theSocket.ToString()));
                             int index = CameraPCsSocketList.IndexOf(theSocket);
                             FCamera = connectedPCs[index].useFWCamera.ToString();
                             UCamera = connectedPCs[index].useUSBCamera.ToString();
-                            msg = Encoding.ASCII.GetBytes(shot_name + "@" + sequenceTime + "@" + FCamera + "@" + UCamera + "@" + isCameraSaving.ToString() + "@\0");
+							ushort camID = 0;	//NR: I don't think this does anything, currently. I'd have to look up what the idea behind it was,
+											    //possibly it was connecting multiple cams to a future QCam version. In any case, setting it to 0 seems to work.
+                            msg = Encoding.ASCII.GetBytes(shot_name + "@" + sequenceTime + "@" + FCamera + "@" + camID.ToString() + "@" + UCamera + "@" + isCameraSaving.ToString() + "@\0");
                             theSocket.Send(msg, 0, msg.Length, SocketFlags.None);
                         }
-                        catch { }
-                    }
+                        catch(Exception e) {
+							addMessageLogText(this, new MessageEvent("Error while sending to socket: " + e.Message));
+						}
+					}
+					addMessageLogText(this, new MessageEvent("Finished sending data to camera..."));
                 }
                 #endregion
 
@@ -920,6 +943,11 @@ namespace WordGenerator
 
                 // send settings data.
                 addMessageLogText(this, new MessageEvent("Sending settings data."));
+				/*foreach (int id in Storage.settingsData.logicalChannelManager.ChannelCollections[HardwareChannel.HardwareConstants.ChannelTypes.rs232].Channels.Keys)
+				{
+					LogicalChannel lc = Storage.settingsData.logicalChannelManager.ChannelCollections[HardwareChannel.HardwareConstants.ChannelTypes.rs232].Channels[id];
+					addMessageLogText(this, new MessageEvent("deviceDescription: " + lc.HardwareChannel.ChannelDescription + " - VisaType: " + lc.HardwareChannel.VisaDeviceType.ToString() + " - VisaSizeHeader: " +  lc.HardwareChannel.VisaSizeHeader.ToString()));
+				}*/
                 actionStatus = Storage.settingsData.serverManager.setSettingsOnConnectedServers(Storage.settingsData, addMessageLogText);
                 if (actionStatus != ServerManager.ServerActionStatus.Success)
                 {
@@ -1061,7 +1089,16 @@ namespace WordGenerator
 
                 addMessageLogText(this, new MessageEvent("Finished run. Writing log file..."));
                 RunLog runLog = new RunLog(runStartTime, formCreationTime, sequence, Storage.settingsData, WordGenerator.MainClientForm.instance.OpenSequenceFileName, WordGenerator.MainClientForm.instance.OpenSettingsFileName);
-                string fileName = runLog.WriteLogFile();
+                string fileName = null;
+
+				try
+				{
+					fileName = runLog.WriteLogFile();
+				}
+				catch (Exception e)
+				{
+					addMessageLogText(this, new MessageEvent("Error while writing run log: " + e.Message));
+				}
 
                 if (fileName != null)
                 {
@@ -1440,8 +1477,8 @@ namespace WordGenerator
                             conf = (Encoding.ASCII.GetString(bconf)).Split('.');
                             for (int i = 0; conf.Length > i; i++)
                             {
-                                if (conf[i] != "")
-                                    addMessageLogText(this, new MessageEvent(conf[i] + "."));
+                                // if (conf[i] != "")
+                                // addMessageLogText(this, new MessageEvent(conf[i] + ".")); // 2017.07.09 BR: Is this where the time listing after a sequence run is coming from?
                             }
                         }
                     }
