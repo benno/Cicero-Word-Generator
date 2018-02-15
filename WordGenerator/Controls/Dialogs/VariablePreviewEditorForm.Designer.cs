@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+			this.TopMost = true;
+
             this.variablePreviewEditorPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.variablePreviewEditor1 = new WordGenerator.Controls.VariablePreviewEditor();
             this.label1 = new System.Windows.Forms.Label();

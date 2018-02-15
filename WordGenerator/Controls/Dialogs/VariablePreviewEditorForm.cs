@@ -23,7 +23,9 @@ namespace WordGenerator.Controls
         {
             eds = new List<VariablePreviewEditor>();
 
-            foreach (Variable var in variables)
+			// 2017.10.12 BR: Sort the variables in the preview form
+			List<Variable> SortedList = variables.OrderBy(o => o.VariableName).ToList();
+			foreach (Variable var in SortedList)
             {
                 VariablePreviewEditor ed = new VariablePreviewEditor(var);
                 eds.Add(ed);

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 using DataStructures;
 
@@ -45,6 +46,11 @@ namespace WordGenerator.Controls
                 this.listFillerSelector.Items.Add("List " + (i + 1));
             }
         }
+
+		private void VariableName_Changed(object sender, System.EventArgs e)
+		{
+			this.layout();
+		}
 
         public void layout()
         {
@@ -153,7 +159,9 @@ namespace WordGenerator.Controls
                 // now we have the correct number of variable editors, lets update them to point at
                 // the correct variables
                 int j = 0;
-                foreach (Variable var in Storage.sequenceData.Variables)
+				List<Variable> SortedList = Storage.sequenceData.Variables.OrderBy(o => o.VariableName).ToList();
+				//foreach (Variable var in Storage.sequenceData.Variables)
+				foreach (Variable var in SortedList)
                 {
                     if (!var.IsSpecialVariable)
                     {
@@ -207,6 +215,7 @@ namespace WordGenerator.Controls
             ved.variableDeleted += new EventHandler(ved_variableDeleted);
             //      ved.SizeChanged += new EventHandler(ved_SizeChanged);
             ved.valueChanged += new EventHandler(ved_valueChanged);
+			ved.textBox1.LostFocus += new EventHandler(VariableName_Changed);
             variableEditors.Add(ved);
             return ved;
         }
@@ -520,15 +529,23 @@ namespace WordGenerator.Controls
         }
 
         private void listFillerButton_Click(object sender, EventArgs e)
-        {
+		{
+			int internal_Repeat = Decimal.ToInt32(this.repeatNum.Value);
+			int overall_Repeat = Decimal.ToInt32(this.numericUpDown1.Value);
             List<Double> fillers = new List<double>();
             try
             {
                 int numOfFillers = (int)(1 + (this.listFillerStop.Value - this.listFillerStart.Value) / this.listFillerStep.Value);
-                for (int i = 0; i < numOfFillers; i++)
-                {
-                    fillers.Add((double)(this.listFillerStart.Value + i * this.listFillerStep.Value));
-                }
+				for (int k = 0; k < overall_Repeat; k++)
+				{
+					for (int i = 0; i < numOfFillers; i++)
+					{
+						for (int j = 0; j < internal_Repeat; j++)
+						{
+							fillers.Add((double)(this.listFillerStart.Value + i * this.listFillerStep.Value));
+						}
+					}
+				}
                 listPanels[listFillerSelector.SelectedIndex].setData(fillers);
             }
             catch
